@@ -43,7 +43,27 @@ const registerCommand = async () => {
                   { name: '1 hour', value: 1 },
                   { name: '2 hours', value: 2 },
                   { name: '3 hours', value: 3 },
-                  { name: '5 hours', value: 5 }
+                  { name: '4 hours', value: 4 },
+                  { name: '5 hours', value: 5 },
+                  { name: '6 hours', value: 6 },
+                  { name: '7 hours', value: 7 },
+                  { name: '8 hours', value: 8 },
+                  { name: '9 hours', value: 9 },
+                  { name: '10 hours', value: 10 },
+                  { name: '11 hours', value: 11 },
+                  { name: '12 hours', value: 12 },
+                  { name: '13 hours', value: 13 },
+                  { name: '14 hours', value: 14 },
+                  { name: '15 hours', value: 15 },
+                  { name: '16 hours', value: 16 },
+                  { name: '17 hours', value: 17 },
+                  { name: '18 hours', value: 18 },
+                  { name: '19 hours', value: 19 },
+                  { name: '20 hours', value: 20 },
+                  { name: '21 hours', value: 21 },
+                  { name: '22 hours', value: 22 },
+                  { name: '23 hours', value: 23 },
+                  { name: '24 hours', value: 24 }
                 )
             )
             .toJSON()
