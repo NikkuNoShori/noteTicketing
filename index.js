@@ -2,6 +2,15 @@ require('dotenv').config();
 const { Client, GatewayIntentBits, REST, Routes, SlashCommandBuilder } = require('discord.js');
 const axios = require('axios');
 
+// Debug: Check if environment variables are loaded
+console.log('Environment variables loaded:');
+console.log('DISCORD_TOKEN:', process.env.DISCORD_TOKEN ? '✅ Set' : '❌ Missing');
+console.log('APPLICATION_ID:', process.env.APPLICATION_ID ? '✅ Set' : '❌ Missing');
+console.log('WEBHOOK_URL:', process.env.WEBHOOK_URL ? '✅ Set' : '❌ Missing');
+if (process.env.WEBHOOK_URL) {
+  console.log('WEBHOOK_URL value:', process.env.WEBHOOK_URL);
+}
+
 const client = new Client({ 
   intents: [
     GatewayIntentBits.Guilds, 
@@ -57,13 +66,13 @@ client.on('interactionCreate', async interaction => {
 
       await interaction.reply({ 
         content: '✅ Sent to AI for summarization!', 
-        ephemeral: true 
+        flags: 64 // 64 is the flag for ephemeral messages
       });
     } catch (error) {
       console.error('Error processing summarize command:', error);
       await interaction.reply({ 
         content: '❌ Error processing request', 
-        ephemeral: true 
+        flags: 64 // 64 is the flag for ephemeral messages
       });
     }
   }
