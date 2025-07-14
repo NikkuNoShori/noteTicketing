@@ -1,0 +1,18 @@
+{
+  "parameters": {
+    "authentication": "none",
+    "requestMethod": "POST",
+    "url": "https://discord.com/api/v10/channels/{{ $json.channel_id }}/messages",
+    "jsonParameters": true,
+    "options": {},
+    "headers": {
+      "Authorization": "Bot YOUR_DISCORD_BOT_TOKEN",
+      "Content-Type": "application/json"
+    },
+    "bodyParametersJson": "{\n  \"content\": \"**Summary:**\\n{{ $json.summary }}\\n\\n**Action Items:**\\n{{ $json.action_items }}\"\n}"
+  },
+  "name": "Send Discord Message",
+  "type": "n8n-nodes-base.httpRequest",
+  "typeVersion": 2,
+  "position": [1200, 500]
+} 

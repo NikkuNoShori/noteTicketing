@@ -34,7 +34,18 @@ const registerCommand = async () => {
         body: [
           new SlashCommandBuilder()
             .setName('summarize')
-            .setDescription('Summarize last few hours of messages')
+            .setDescription('Summarize messages from the last N hours')
+            .addIntegerOption(option =>
+              option.setName('hours')
+                .setDescription('How many hours back?')
+                .setRequired(true)
+                .addChoices(
+                  { name: '1 hour', value: 1 },
+                  { name: '2 hours', value: 2 },
+                  { name: '3 hours', value: 3 },
+                  { name: '5 hours', value: 5 }
+                )
+            )
             .toJSON()
         ] 
       }
@@ -52,6 +63,8 @@ client.on('interactionCreate', async interaction => {
   if (interaction.commandName === 'summarize') {
     console.log('--- /summarize command invoked ---');
     try {
+      const hours = interaction.options.getInteger('hours');
+      console.log('Selected hours:', hours);
       console.log('Interaction:', {
         user: interaction.user.tag,
         channel: interaction.channelId,
@@ -60,7 +73,7 @@ client.on('interactionCreate', async interaction => {
       const messages = await interaction.channel.messages.fetch({ limit: 50 });
       const now = Date.now();
       const recent = messages
-        .filter(m => now - m.createdTimestamp < 3 * 60 * 60 * 1000) // last 3 hours
+        .filter(m => now - m.createdTimestamp < hours * 60 * 60 * 1000)
         .map(m => ({ user: m.author.username, text: m.content }))
         .reverse(); // chronological order
       console.log('Fetched recent messages:', recent);
@@ -68,6 +81,7 @@ client.on('interactionCreate', async interaction => {
       const payload = {
         channel_id: interaction.channelId,
         user_id: interaction.user.id,
+        hours,
         messages: recent
       };
       console.log('Posting to webhook:', process.env.WEBHOOK_URL);
