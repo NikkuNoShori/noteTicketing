@@ -28,49 +28,98 @@ client.once('ready', () => {
 const registerCommand = async () => {
   try {
     const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
-    await rest.put(
-      Routes.applicationCommands(process.env.APPLICATION_ID),
-      { 
-        body: [
-          new SlashCommandBuilder()
-            .setName('summarize')
-            .setDescription('Summarize messages from the last N hours')
-            .addIntegerOption(option =>
-              option.setName('hours')
-                .setDescription('How many hours back?')
-                .setRequired(true)
-                .addChoices(
-                  { name: '1 hour', value: 1 },
-                  { name: '2 hours', value: 2 },
-                  { name: '3 hours', value: 3 },
-                  { name: '4 hours', value: 4 },
-                  { name: '5 hours', value: 5 },
-                  { name: '6 hours', value: 6 },
-                  { name: '7 hours', value: 7 },
-                  { name: '8 hours', value: 8 },
-                  { name: '9 hours', value: 9 },
-                  { name: '10 hours', value: 10 },
-                  { name: '11 hours', value: 11 },
-                  { name: '12 hours', value: 12 },
-                  { name: '13 hours', value: 13 },
-                  { name: '14 hours', value: 14 },
-                  { name: '15 hours', value: 15 },
-                  { name: '16 hours', value: 16 },
-                  { name: '17 hours', value: 17 },
-                  { name: '18 hours', value: 18 },
-                  { name: '19 hours', value: 19 },
-                  { name: '20 hours', value: 20 },
-                  { name: '21 hours', value: 21 },
-                  { name: '22 hours', value: 22 },
-                  { name: '23 hours', value: 23 },
-                  { name: '24 hours', value: 24 }
-                )
-            )
-            .toJSON()
-        ] 
-      }
-    );
-    console.log('✅ Slash command registered successfully!');
+    const guildId = process.env.GUILD_ID;
+    if (guildId) {
+      // Register as a guild command for instant updates
+      await rest.put(
+        Routes.applicationGuildCommands(process.env.APPLICATION_ID, guildId),
+        { 
+          body: [
+            new SlashCommandBuilder()
+              .setName('summarize')
+              .setDescription('Summarize messages from the last N hours')
+              .addIntegerOption(option =>
+                option.setName('hours')
+                  .setDescription('How many hours back?')
+                  .setRequired(true)
+                  .addChoices(
+                    { name: '1 hour', value: 1 },
+                    { name: '2 hours', value: 2 },
+                    { name: '3 hours', value: 3 },
+                    { name: '4 hours', value: 4 },
+                    { name: '5 hours', value: 5 },
+                    { name: '6 hours', value: 6 },
+                    { name: '7 hours', value: 7 },
+                    { name: '8 hours', value: 8 },
+                    { name: '9 hours', value: 9 },
+                    { name: '10 hours', value: 10 },
+                    { name: '11 hours', value: 11 },
+                    { name: '12 hours', value: 12 },
+                    { name: '13 hours', value: 13 },
+                    { name: '14 hours', value: 14 },
+                    { name: '15 hours', value: 15 },
+                    { name: '16 hours', value: 16 },
+                    { name: '17 hours', value: 17 },
+                    { name: '18 hours', value: 18 },
+                    { name: '19 hours', value: 19 },
+                    { name: '20 hours', value: 20 },
+                    { name: '21 hours', value: 21 },
+                    { name: '22 hours', value: 22 },
+                    { name: '23 hours', value: 23 },
+                    { name: '24 hours', value: 24 }
+                  )
+              )
+              .toJSON()
+          ] 
+        }
+      );
+      console.log('✅ Guild slash command registered successfully!');
+    } else {
+      // Fallback to global command registration
+      await rest.put(
+        Routes.applicationCommands(process.env.APPLICATION_ID),
+        { 
+          body: [
+            new SlashCommandBuilder()
+              .setName('summarize')
+              .setDescription('Summarize messages from the last N hours')
+              .addIntegerOption(option =>
+                option.setName('hours')
+                  .setDescription('How many hours back?')
+                  .setRequired(true)
+                  .addChoices(
+                    { name: '1 hour', value: 1 },
+                    { name: '2 hours', value: 2 },
+                    { name: '3 hours', value: 3 },
+                    { name: '4 hours', value: 4 },
+                    { name: '5 hours', value: 5 },
+                    { name: '6 hours', value: 6 },
+                    { name: '7 hours', value: 7 },
+                    { name: '8 hours', value: 8 },
+                    { name: '9 hours', value: 9 },
+                    { name: '10 hours', value: 10 },
+                    { name: '11 hours', value: 11 },
+                    { name: '12 hours', value: 12 },
+                    { name: '13 hours', value: 13 },
+                    { name: '14 hours', value: 14 },
+                    { name: '15 hours', value: 15 },
+                    { name: '16 hours', value: 16 },
+                    { name: '17 hours', value: 17 },
+                    { name: '18 hours', value: 18 },
+                    { name: '19 hours', value: 19 },
+                    { name: '20 hours', value: 20 },
+                    { name: '21 hours', value: 21 },
+                    { name: '22 hours', value: 22 },
+                    { name: '23 hours', value: 23 },
+                    { name: '24 hours', value: 24 }
+                  )
+              )
+              .toJSON()
+          ] 
+        }
+      );
+      console.log('✅ Global slash command registered successfully!');
+    }
   } catch (error) {
     console.error('❌ Error registering slash command:', error);
   }
