@@ -50,19 +50,32 @@ client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
   
   if (interaction.commandName === 'summarize') {
+    console.log('--- /summarize command invoked ---');
     try {
+      console.log('Interaction:', {
+        user: interaction.user.tag,
+        channel: interaction.channelId,
+        guild: interaction.guildId
+      });
       const messages = await interaction.channel.messages.fetch({ limit: 50 });
       const now = Date.now();
       const recent = messages
         .filter(m => now - m.createdTimestamp < 3 * 60 * 60 * 1000) // last 3 hours
         .map(m => ({ user: m.author.username, text: m.content }))
         .reverse(); // chronological order
+      console.log('Fetched recent messages:', recent);
 
-      await axios.post(process.env.WEBHOOK_URL, {
+      const payload = {
         channel_id: interaction.channelId,
         user_id: interaction.user.id,
         messages: recent
-      });
+      };
+      console.log('Posting to webhook:', process.env.WEBHOOK_URL);
+      console.log('Payload:', JSON.stringify(payload, null, 2));
+
+      const webhookResponse = await axios.post(process.env.WEBHOOK_URL, payload);
+      console.log('Webhook response status:', webhookResponse.status);
+      console.log('Webhook response data:', webhookResponse.data);
 
       await interaction.reply({ 
         content: '✅ Sent to AI for summarization!', 
@@ -70,6 +83,9 @@ client.on('interactionCreate', async interaction => {
       });
     } catch (error) {
       console.error('Error processing summarize command:', error);
+      if (error.response) {
+        console.error('Webhook error response:', error.response.status, error.response.data);
+      }
       await interaction.reply({ 
         content: '❌ Error processing request', 
         flags: 64 // 64 is the flag for ephemeral messages
