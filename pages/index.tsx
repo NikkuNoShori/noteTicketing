@@ -1,5 +1,5 @@
 import React from 'react';
 
 export default function Home() {
-  return <div>API Only Project</div>;
+  return <div>NoteTicketing AI API</div>;
 } 

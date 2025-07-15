@@ -1,29 +1,27 @@
 {
-  "name": "noteticketing",
+  "name": "noteticketing-api",
   "version": "1.0.0",
-  "description": "",
+  "description": "AI API for NoteTicketing Discord bot",
   "main": "index.js",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start"
   },
-  "keywords": [],
+  "keywords": ["ai", "api", "discord", "summarization"],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@neondatabase/serverless": "^0.10.4",
-    "ai": "^4.3.19",
-    "axios": "^1.10.0",
-    "discord.js": "^14.21.0",
-    "dotenv": "^17.2.0",
-    "next": "^14.2.30",
-    "openai": "^5.9.0",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "ai": "^4.3.18",
+    "next": "^14.2.4",
+    "openai": "^4.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@types/react": "19.1.8",
-    "typescript": "5.8.3"
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.2.0",
+    "typescript": "^5.0.0"
   }
 }
