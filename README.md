@@ -1,56 +1,57 @@
-# noteTicketing
+# NoteTicketing: n8n + Vercel AI SDK Integration Assistant
 
-A Discord bot that relays summarized Discord channel messages to an n8n workflow for AI processing and storage in a Neon database.
+## Overview
+This project is a professional assistant designed to seamlessly integrate [n8n](https://n8n.io/) automated workflows with the [Vercel AI SDK](https://sdk.vercel.ai/docs). It provides a secure, scalable, and maintainable backend for processing, summarizing, and managing conversational data—ideal for use cases like Discord bots, ticketing, and executive assistants.
 
 ## Features
-- Registers a `/summarize` slash command in Discord
-- Fetches recent messages from a channel (last 3 hours, up to 50 messages)
-- Sends messages to an n8n webhook for further processing (e.g., AI summarization, NeonDB storage)
+- **API-First Architecture:** Uses Next.js API routes for robust, serverless endpoints.
+- **AI Summarization:** Leverages OpenAI LLMs (via Vercel AI SDK) to summarize conversations and extract action items.
+- **n8n Integration:** Designed to be called from n8n workflows for automation and orchestration.
+- **Persistent Rate Limiting:** Uses Neon Postgres to track and limit API usage per client/IP.
+- **Security Best Practices:** Bearer token authentication, environment variable management, and strict .gitignore rules.
+- **Extensible:** Easily add more endpoints, models, or workflow integrations.
 
-## How It Works
-1. User types `/summarize` in a Discord channel
-2. The bot fetches recent messages and POSTs them to the configured n8n webhook
-3. n8n processes the data (e.g., with OpenRouter, stores results in NeonDB)
+## Architecture
+- **Next.js**: Provides the API layer (see `/api/summarize.ts`).
+- **Vercel AI SDK**: Standardizes LLM access (OpenAI, OpenRouter, etc.).
+- **Neon Postgres**: Stores rate limit data for persistent, scalable protection.
+- **n8n**: Orchestrates workflows and calls the API endpoint.
 
-## Environment Variables
-Create a `.env` file in the project root with the following:
+## Setup
+1. **Clone the repository**
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+3. **Set environment variables** in `.env.local`:
+   ```env
+   OPENAI_API_KEY=your-openai-key
+   MY_API_AUTH_TOKEN=your-strong-secret-token
+   DATABASE_URL=your-neon-postgres-url
+   ```
+4. **Run the migration** to create the rate limit table:
+   ```bash
+   psql $DATABASE_URL -f migrations/001_create_api_rate_limits.sql
+   ```
+5. **Start the dev server**
+   ```bash
+   npm run dev
+   ```
 
-```
-DISCORD_TOKEN=your-discord-bot-token
-APPLICATION_ID=your-discord-application-id
-WEBHOOK_URL=https://your-n8n-domain/webhook/discord-ai-ingest
-```
+## Security Best Practices
+- **Never commit `.env` files or secrets**—these are excluded by `.gitignore`.
+- **Always use Bearer token authentication** for API endpoints.
+- **Monitor and clean up rate limit data** in the database regularly.
+- **Review `.cursorrules`** for project standards and workflow guidelines.
 
-- `DISCORD_TOKEN`: Your Discord bot token from the Developer Portal
-- `APPLICATION_ID`: Your Discord application (client) ID
-- `WEBHOOK_URL`: The public URL of your n8n webhook (must be accessible from the internet)
+## Deployment
+- **Vercel:** Deploys automatically with `next build`. Add your environment variables in the Vercel dashboard.
+- **n8n Integration:** Use an HTTP Request node in n8n to call the `/api/summarize` endpoint, passing the `chatLog` and the correct Authorization header.
 
-## Local Development
-1. Clone the repo
-2. Run `npm install`
-3. Create and fill out your `.env` file
-4. Start the bot: `npm start`
+## Project Standards
+- **.gitignore**: Excludes sensitive and build files.
+- **.cursorrules**: Documents project rules, security, and workflow best practices.
 
-## Deployment (Render Example)
-- Deploy as a **Background Worker** (not a Web Service)
-- Set environment variables in the Render dashboard (do not upload `.env`)
-- Use `npm start` as the start command
+---
 
-## n8n Webhook Setup
-- Add a Webhook node to your n8n workflow
-- Set the path (e.g., `discord-ai-ingest`) and method (`POST`)
-- Activate the workflow
-- The production webhook URL is: `https://your-n8n-domain/webhook/discord-ai-ingest`
-- The workflow must be active for the webhook to work
-
-## Troubleshooting
-- If you get a 404 from the webhook, ensure the workflow is active and the path/method match
-- The n8n UI may show a localhost URL; use your public domain in the bot config
-
-## Project Structure
-- `index.js`: Main bot logic
-- `.env`: Environment variables (not committed)
-- `package.json`: Dependencies and scripts
-
-## License
-MIT
+**This project is built for professionals who want secure, scalable, and maintainable AI-powered workflow automation.**
