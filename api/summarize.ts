@@ -1,5 +1,5 @@
 import { Pool } from "@neondatabase/serverless";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { NextApiRequest, NextApiResponse } from "next";
 import { OpenAI } from "ai/openai";
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -9,7 +9,10 @@ const AUTH_TOKEN = process.env.MY_API_AUTH_TOKEN;
 const RATE_LIMIT = 10; // requests
 const WINDOW_SEC = 60; // per minute
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   // Bearer token authentication
   if (req.headers.authorization !== `Bearer ${AUTH_TOKEN}`) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -18,7 +21,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Rate limiting by IP
   const ip =
     (req.headers["x-forwarded-for"] as string) ||
-    req.socket.remoteAddress ||
+    req.socket?.remoteAddress ||
     "";
   const now = new Date();
   const windowStart = new Date(now.getTime() - WINDOW_SEC * 1000);
