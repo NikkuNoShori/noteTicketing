@@ -1,9 +1,0 @@
-{
-  "parameters": {
-    "functionCode": "console.log('DEBUG NODE OUTPUT:', $json);\nreturn [{ json: $json }];"
-  },
-  "name": "Debug",
-  "type": "n8n-nodes-base.function",
-  "typeVersion": 1,
-  "position": [800, 400]
-} 
