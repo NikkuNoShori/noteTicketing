@@ -1,5 +1,5 @@
 {
-  "name": "noteticketing-api",
+  "name": "noteticketing-discord-bot",
   "version": "1.0.0",
   "description": "AI API for NoteTicketing Discord bot",
   "main": "src/bot/discord-bot.js",
@@ -9,7 +9,12 @@
     "start": "next start",
     "bot": "node src/bot/discord-bot.js"
   },
-  "keywords": ["ai", "api", "discord", "summarization"],
+  "keywords": [
+    "discord",
+    "bot",
+    "ai",
+    "summarization"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -24,8 +29,6 @@
     "dotenv": "^16.3.1"
   },
   "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.2.0",
-    "typescript": "^5.0.0"
+    "@types/node": "^20.0.0"
   }
 }

@@ -1,49 +1,43 @@
-# NoteTicketing AI API
+# NoteTicketing Discord Bot
 
-## Overview
-This is the AI API backend for the NoteTicketing Discord bot. It provides secure, rate-limited AI summarization services using OpenAI and Neon Postgres.
+A Discord bot that integrates with an external AI API to provide chat summarization functionality.
 
 ## Features
-- **AI Summarization:** Uses OpenAI to summarize Discord conversations
-- **Rate Limiting:** Persistent rate limiting with Neon Postgres
-- **Authentication:** Bearer token protection
-- **n8n Integration:** Designed to be called from n8n workflows
+
+- `/summarize` command to summarize messages from the last 1-24 hours
+- Integrates with external AI API for intelligent summarization
+- Ephemeral responses for clean user experience
 
 ## Setup
+
 1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. **Set environment variables** in `.env.local`:
-   ```env
-   OPENAI_API_KEY=your-openai-key
-   MY_API_AUTH_TOKEN=your-strong-secret-token
-   DATABASE_URL=your-neon-postgres-url
+2. **Environment variables:**
+   Create a `.env` file with:
+   ```
+   DISCORD_TOKEN=your-discord-bot-token
+   APPLICATION_ID=your-discord-application-id
+   GUILD_ID=your-guild-id
+   API_BASE_URL=https://your-api-domain.vercel.app
+   API_AUTH_TOKEN=your-strong-secret-token
    ```
 
-3. **Run the migration** to create the rate limit table:
+3. **Run the bot:**
    ```bash
-   psql $DATABASE_URL -f migrations/001_create_api_rate_limits.sql
+   npm start
    ```
 
-4. **Start the dev server:**
-   ```bash
-   npm run dev
-   ```
+## Usage
 
-## API Usage
-- **Endpoint:** `POST /api/summarize`
-- **Headers:** `Authorization: Bearer your-token`
-- **Body:** `{ "chatLog": "user1: message1\nuser2: message2" }`
-- **Response:** `{ "summary": "...", "action_items": [...] }`
+Use the `/summarize` command in any channel and select the number of hours to look back. The bot will fetch recent messages and send them to the AI API for summarization.
+
+## API Integration
+
+This bot calls an external AI API for summarization. The API should be deployed separately and configured with the same authentication token.
 
 ## Deployment
-- Deploy to Vercel for serverless API hosting
-- Add environment variables in Vercel dashboard
-- The Discord bot (separate project) calls this API
 
-## Security
-- Bearer token authentication required
-- Rate limiting: 10 requests per minute per IP
-- Environment variables for sensitive data
+Deploy to your preferred platform (Render, Heroku, etc.) and set the environment variables in your deployment dashboard.
