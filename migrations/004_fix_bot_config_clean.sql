@@ -1,5 +1,4 @@
--- Migration: Create action items, bot configuration, and privacy audit tables
--- This migration sets up the core tables for the enhanced bot functionality
+DROP TABLE IF EXISTS action_items;
 
 CREATE TABLE IF NOT EXISTS action_items (
     id VARCHAR(16) PRIMARY KEY,
@@ -15,7 +14,6 @@ CREATE TABLE IF NOT EXISTS action_items (
     archived BOOLEAN DEFAULT FALSE
 );
 
--- Bot configuration table
 CREATE TABLE IF NOT EXISTS bot_config (
     guild_id VARCHAR(50) PRIMARY KEY,
     channels_to_monitor JSONB DEFAULT '[]'::jsonb,
@@ -28,24 +26,35 @@ CREATE TABLE IF NOT EXISTS bot_config (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Privacy audit log (for compliance)
+CREATE TABLE IF NOT EXISTS processed_messages (
+    id SERIAL PRIMARY KEY,
+    message_id TEXT NOT NULL UNIQUE,
+    channel_id TEXT NOT NULL,
+    guild_id TEXT NOT NULL,
+    processed_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    action_items_found BOOLEAN DEFAULT FALSE,
+    summary_generated TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS privacy_audit (
     id SERIAL PRIMARY KEY,
-    user_id_hash VARCHAR(64), -- Hashed user ID
+    user_id_hash VARCHAR(64),
     action VARCHAR(50) NOT NULL,
     timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     metadata JSONB
 );
 
--- Indexes for performance
 CREATE INDEX IF NOT EXISTS idx_action_items_channel_id ON action_items(channel_id);
 CREATE INDEX IF NOT EXISTS idx_action_items_created_at ON action_items(created_at);
 CREATE INDEX IF NOT EXISTS idx_action_items_processed ON action_items(processed);
 CREATE INDEX IF NOT EXISTS idx_action_items_priority ON action_items(priority);
 CREATE INDEX IF NOT EXISTS idx_bot_config_active ON bot_config(active);
 CREATE INDEX IF NOT EXISTS idx_privacy_audit_timestamp ON privacy_audit(timestamp);
+CREATE INDEX IF NOT EXISTS idx_processed_messages_message_id ON processed_messages(message_id);
+CREATE INDEX IF NOT EXISTS idx_processed_messages_channel_guild ON processed_messages(channel_id, guild_id);
+CREATE INDEX IF NOT EXISTS idx_processed_messages_processed_at ON processed_messages(processed_at);
 
--- Function to update timestamps
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -54,12 +63,11 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
--- Trigger for bot_config updates
+DROP TRIGGER IF EXISTS update_bot_config_updated_at ON bot_config;
 CREATE TRIGGER update_bot_config_updated_at 
     BEFORE UPDATE ON bot_config 
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Sample configuration insert
 INSERT INTO bot_config (guild_id, channels_to_monitor, todo_channel_id, sweep_interval_hours, privacy_mode_enabled) 
 VALUES (
     'YOUR_GUILD_ID', 
