@@ -15,12 +15,12 @@ if (process.env.WEBHOOK_URL) {
   console.log('WEBHOOK_URL value:', process.env.WEBHOOK_URL);
 }
 
-const client = new Client({ 
+const client = new Client({
   intents: [
-    GatewayIntentBits.Guilds, 
-    GatewayIntentBits.GuildMessages, 
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
     GatewayIntentBits.MessageContent
-  ] 
+  ]
 });
 
 client.once('ready', () => {
@@ -38,7 +38,7 @@ const registerCommand = async () => {
       // Register as a guild command for instant updates
       await rest.put(
         Routes.applicationGuildCommands(process.env.APPLICATION_ID, guildId),
-        { 
+        {
           body: [
             new SlashCommandBuilder()
               .setName('summarize')
@@ -131,7 +131,7 @@ const registerCommand = async () => {
                   )
               )
               .toJSON()
-          ] 
+          ]
         }
       );
       console.log('✅ Guild slash command registered successfully!');
@@ -139,7 +139,7 @@ const registerCommand = async () => {
       // Fallback to global command registration
       await rest.put(
         Routes.applicationCommands(process.env.APPLICATION_ID),
-        { 
+        {
           body: [
             new SlashCommandBuilder()
               .setName('summarize')
@@ -232,7 +232,7 @@ const registerCommand = async () => {
                   )
               )
               .toJSON()
-          ] 
+          ]
         }
       );
       console.log('✅ Global slash command registered successfully!');
@@ -245,7 +245,7 @@ const registerCommand = async () => {
 // Handle slash command
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
-  
+
   if (interaction.commandName === 'summarize') {
     console.log('--- /summarize command invoked ---');
     try {
@@ -277,8 +277,8 @@ client.on('interactionCreate', async interaction => {
       console.log('Webhook response status:', webhookResponse.status);
       console.log('Webhook response data:', webhookResponse.data);
 
-      await interaction.reply({ 
-        content: '✅ Sent to AI for summarization!', 
+      await interaction.reply({
+        content: '✅ Sent to AI for summarization!',
         flags: 64 // 64 is the flag for ephemeral messages
       });
     } catch (error) {
@@ -286,30 +286,30 @@ client.on('interactionCreate', async interaction => {
       if (error.response) {
         console.error('Webhook error response:', error.response.status, error.response.data);
       }
-      await interaction.reply({ 
-        content: '❌ Error processing request', 
+      await interaction.reply({
+        content: '❌ Error processing request',
         flags: 64 // 64 is the flag for ephemeral messages
       });
     }
   } else if (interaction.commandName === 'config') {
     console.log('--- /config command invoked ---');
-    
+
     // Check if user has admin permissions
     if (!interaction.member.permissions.has('ADMINISTRATOR')) {
-      await interaction.reply({ 
-        content: '❌ You need administrator permissions to configure the bot.', 
-        flags: 64 
+      await interaction.reply({
+        content: '❌ You need administrator permissions to configure the bot.',
+        flags: 64
       });
       return;
     }
-    
+
     try {
       const subcommand = interaction.options.getSubcommand();
       const guildId = interaction.guildId;
-      
+
       if (subcommand === 'privacy') {
         const enabled = interaction.options.getBoolean('enabled');
-        
+
         const response = await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, {
           guildId,
           privacyModeEnabled: enabled
@@ -318,24 +318,24 @@ client.on('interactionCreate', async interaction => {
             'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
           }
         });
-        
-        await interaction.reply({ 
-          content: `✅ Privacy mode ${enabled ? 'enabled' : 'disabled'} successfully!`, 
-          flags: 64 
+
+        await interaction.reply({
+          content: `✅ Privacy mode ${enabled ? 'enabled' : 'disabled'} successfully!`,
+          flags: 64
         });
-        
+
       } else if (subcommand === 'channels') {
         const addChannel = interaction.options.getChannel('add');
         const removeChannel = interaction.options.getChannel('remove');
         const todoChannel = interaction.options.getChannel('todo');
-        
+
         // Get current config
         const configResponse = await axios.get(`${process.env.API_BASE_URL}/api/bot-config?guildId=${guildId}`, {
           headers: {
             'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
           }
         });
-        
+
         let currentConfig = configResponse.data;
         if (!currentConfig) {
           // Create new config if it doesn't exist
@@ -348,9 +348,9 @@ client.on('interactionCreate', async interaction => {
             active: true
           };
         }
-        
+
         let updateData = { guildId };
-        
+
         if (addChannel) {
           const channels = currentConfig.channels_to_monitor || [];
           if (!channels.includes(addChannel.id)) {
@@ -358,51 +358,51 @@ client.on('interactionCreate', async interaction => {
             updateData.channelsToMonitor = channels;
           }
         }
-        
+
         if (removeChannel) {
           const channels = currentConfig.channels_to_monitor || [];
           updateData.channelsToMonitor = channels.filter(id => id !== removeChannel.id);
         }
-        
+
         if (todoChannel) {
           updateData.todoChannelId = todoChannel.id;
         }
-        
+
         const response = await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, updateData, {
           headers: {
             'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
           }
         });
-        
+
         let message = '✅ Configuration updated:\n';
         if (addChannel) message += `• Added #${addChannel.name} to monitoring\n`;
         if (removeChannel) message += `• Removed #${removeChannel.name} from monitoring\n`;
         if (todoChannel) message += `• Set #${todoChannel.name} as todo channel\n`;
-        
-        await interaction.reply({ 
-          content: message, 
-          flags: 64 
+
+        await interaction.reply({
+          content: message,
+          flags: 64
         });
-        
+
       } else if (subcommand === 'sweep') {
         const enabled = interaction.options.getBoolean('enabled');
         const interval = interaction.options.getInteger('interval');
         const outputChannel = interaction.options.getChannel('output');
-        
+
         const updateData = { guildId };
-        
+
         if (enabled !== null) {
           updateData.active = enabled;
         }
-        
+
         if (interval) {
           updateData.sweepIntervalHours = interval;
         }
-        
+
         if (outputChannel) {
           updateData.sweepOutputChannelId = outputChannel.id;
         }
-        
+
         if (enabled !== null || interval || outputChannel) {
           // Update configuration
           const response = await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, updateData, {
@@ -410,7 +410,7 @@ client.on('interactionCreate', async interaction => {
               'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
             }
           });
-          
+
           let message = '✅ Sweep configuration updated:\n';
           if (enabled !== null) {
             message += `• Sweep ${enabled ? 'enabled' : 'disabled'}\n`;
@@ -421,10 +421,10 @@ client.on('interactionCreate', async interaction => {
           if (outputChannel) {
             message += `• Output channel set to #${outputChannel.name}\n`;
           }
-          
-          await interaction.reply({ 
-            content: message, 
-            flags: 64 
+
+          await interaction.reply({
+            content: message,
+            flags: 64
           });
         } else {
           // Show current config
@@ -433,27 +433,27 @@ client.on('interactionCreate', async interaction => {
               'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
             }
           });
-          
+
           const config = configResponse.data;
           if (config) {
-            await interaction.reply({ 
-              content: `📋 Current sweep configuration:\n• Sweep: ${config.active ? '✅ Enabled' : '❌ Disabled'}\n• Interval: ${config.sweep_interval_hours || 'not set'} hours\n• Output channel: ${config.sweep_output_channel_id ? 'set' : 'not set'}\n• Privacy mode: ${config.privacy_mode_enabled ? 'enabled' : 'disabled'}\n• Monitored channels: ${config.channels_to_monitor?.length || 0}\n• Todo channel: ${config.todo_channel_id ? 'set' : 'not set'}`, 
-              flags: 64 
+            await interaction.reply({
+              content: `📋 Current sweep configuration:\n• Sweep: ${config.active ? '✅ Enabled' : '❌ Disabled'}\n• Interval: ${config.sweep_interval_hours || 'not set'} hours\n• Output channel: ${config.sweep_output_channel_id ? 'set' : 'not set'}\n• Privacy mode: ${config.privacy_mode_enabled ? 'enabled' : 'disabled'}\n• Monitored channels: ${config.channels_to_monitor?.length || 0}\n• Todo channel: ${config.todo_channel_id ? 'set' : 'not set'}`,
+              flags: 64
             });
           } else {
-            await interaction.reply({ 
-              content: '❌ No configuration found for this server.', 
-              flags: 64 
+            await interaction.reply({
+              content: '❌ No configuration found for this server.',
+              flags: 64
             });
           }
         }
       }
-      
+
     } catch (error) {
       console.error('Error processing config command:', error);
-      await interaction.reply({ 
-        content: '❌ Error updating configuration', 
-        flags: 64 
+      await interaction.reply({
+        content: '❌ Error updating configuration',
+        flags: 64
       });
     }
   }
@@ -462,12 +462,12 @@ client.on('interactionCreate', async interaction => {
 // Scheduled sweep functionality
 async function startScheduledSweep() {
   console.log('🔄 Starting scheduled channel sweep...');
-  
+
   // Clear any existing interval
   if (sweepInterval) {
     clearInterval(sweepInterval);
   }
-  
+
   // Start the sweep interval
   sweepInterval = setInterval(async () => {
     try {
@@ -476,18 +476,18 @@ async function startScheduledSweep() {
       console.error('❌ Error during scheduled sweep:', error);
     }
   }, SWEEP_INTERVAL_MS);
-  
+
   // Perform initial sweep
   await performScheduledSweep();
 }
 
 async function performScheduledSweep() {
   console.log('🔍 Performing scheduled channel sweep...');
-  
+
   try {
     // Get all guilds the bot is in
     const guilds = client.guilds.cache;
-    
+
     for (const [guildId, guild] of guilds) {
       try {
         // Get bot configuration for this guild
@@ -496,16 +496,16 @@ async function performScheduledSweep() {
             'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
           }
         });
-        
+
         const config = configResponse.data;
-        
+
         if (!config.active || !config.channels_to_monitor || config.channels_to_monitor.length === 0) {
           console.log(`⏭️ Skipping guild ${guild.name} - not configured for sweeping`);
           continue;
         }
-        
+
         console.log(`📋 Sweeping guild: ${guild.name}`);
-        
+
         // Sweep each configured channel
         for (const channelId of config.channels_to_monitor) {
           try {
@@ -514,9 +514,9 @@ async function performScheduledSweep() {
               console.log(`⚠️ Channel ${channelId} not found or not text-based`);
               continue;
             }
-            
+
             console.log(`📝 Sweeping channel: ${channel.name}`);
-            
+
             // Fetch recent messages (last hour by default)
             const messages = await channel.messages.fetch({ limit: 100 });
             const now = Date.now();
@@ -529,12 +529,12 @@ async function performScheduledSweep() {
                 createdTimestamp: m.createdTimestamp
               }))
               .reverse(); // chronological order
-            
+
             if (recentMessages.length === 0) {
               console.log(`📭 No recent messages in ${channel.name}`);
               continue;
             }
-            
+
             // Send to sweep API
             const sweepResponse = await axios.post(`${process.env.API_BASE_URL}/api/sweep-channels`, {
               guildId,
@@ -546,10 +546,10 @@ async function performScheduledSweep() {
                 'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
               }
             });
-            
+
             const result = sweepResponse.data;
             console.log(`✅ Sweep completed for ${channel.name}: ${result.processed} messages processed, ${result.actionItemsFound} action items found`);
-            
+
             // If action items were found and we have an output channel, post them
             if (result.actionItemsFound > 0) {
               const outputChannelId = config.sweep_output_channel_id || config.todo_channel_id;
@@ -559,12 +559,12 @@ async function performScheduledSweep() {
                 console.log(`⚠️ No output channel configured for sweep results`);
               }
             }
-            
+
           } catch (channelError) {
             console.error(`❌ Error sweeping channel ${channelId}:`, channelError.message);
           }
         }
-        
+
         // Update last sweep time
         await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, {
           guildId,
@@ -574,12 +574,12 @@ async function performScheduledSweep() {
             'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
           }
         });
-        
+
       } catch (guildError) {
         console.error(`❌ Error processing guild ${guildId}:`, guildError.message);
       }
     }
-    
+
   } catch (error) {
     console.error('❌ Error during scheduled sweep:', error);
   }
@@ -592,7 +592,7 @@ async function postActionItemsToChannel(actionItems, todoChannelId, sourceChanne
       console.log(`⚠️ Todo channel ${todoChannelId} not found or not text-based`);
       return;
     }
-    
+
     const embed = {
       color: 0x00ff00,
       title: `🆕 New Action Items from #${sourceChannelName}`,
@@ -607,14 +607,14 @@ async function postActionItemsToChannel(actionItems, todoChannelId, sourceChanne
         text: 'Auto-detected by NoteTicketing Bot'
       }
     };
-    
+
     await todoChannel.send({ embeds: [embed] });
     console.log(`✅ Posted ${actionItems.length} action items to todo channel`);
-    
+
   } catch (error) {
     console.error('❌ Error posting action items to todo channel:', error);
   }
 }
 
 // Login to Discord with your bot token
-client.login(process.env.DISCORD_TOKEN); 
+client.login(process.env.DISCORD_TOKEN);
