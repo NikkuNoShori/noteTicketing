@@ -112,12 +112,22 @@ const registerCommand = async () => {
                 subcommand
                   .setName('sweep')
                   .setDescription('Configure sweep settings')
+                  .addBooleanOption(option =>
+                    option.setName('enabled')
+                      .setDescription('Enable or disable automatic channel sweeping')
+                      .setRequired(false)
+                  )
                   .addIntegerOption(option =>
                     option.setName('interval')
                       .setDescription('Sweep interval in hours (1-24)')
                       .setRequired(false)
                       .setMinValue(1)
                       .setMaxValue(24)
+                  )
+                  .addChannelOption(option =>
+                    option.setName('output')
+                      .setDescription('Set the output channel for sweep results')
+                      .setRequired(false)
                   )
               )
               .toJSON()
@@ -203,12 +213,22 @@ const registerCommand = async () => {
                 subcommand
                   .setName('sweep')
                   .setDescription('Configure sweep settings')
+                  .addBooleanOption(option =>
+                    option.setName('enabled')
+                      .setDescription('Enable or disable automatic channel sweeping')
+                      .setRequired(false)
+                  )
                   .addIntegerOption(option =>
                     option.setName('interval')
                       .setDescription('Sweep interval in hours (1-24)')
                       .setRequired(false)
                       .setMinValue(1)
                       .setMaxValue(24)
+                  )
+                  .addChannelOption(option =>
+                    option.setName('output')
+                      .setDescription('Set the output channel for sweep results')
+                      .setRequired(false)
                   )
               )
               .toJSON()
@@ -365,20 +385,45 @@ client.on('interactionCreate', async interaction => {
         });
         
       } else if (subcommand === 'sweep') {
+        const enabled = interaction.options.getBoolean('enabled');
         const interval = interaction.options.getInteger('interval');
+        const outputChannel = interaction.options.getChannel('output');
+        
+        const updateData = { guildId };
+        
+        if (enabled !== null) {
+          updateData.active = enabled;
+        }
         
         if (interval) {
-          const response = await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, {
-            guildId,
-            sweepIntervalHours: interval
-          }, {
+          updateData.sweepIntervalHours = interval;
+        }
+        
+        if (outputChannel) {
+          updateData.sweepOutputChannelId = outputChannel.id;
+        }
+        
+        if (enabled !== null || interval || outputChannel) {
+          // Update configuration
+          const response = await axios.patch(`${process.env.API_BASE_URL}/api/bot-config`, updateData, {
             headers: {
               'Authorization': `Bearer ${process.env.MY_API_AUTH_TOKEN}`
             }
           });
           
+          let message = '✅ Sweep configuration updated:\n';
+          if (enabled !== null) {
+            message += `• Sweep ${enabled ? 'enabled' : 'disabled'}\n`;
+          }
+          if (interval) {
+            message += `• Interval set to ${interval} hours\n`;
+          }
+          if (outputChannel) {
+            message += `• Output channel set to #${outputChannel.name}\n`;
+          }
+          
           await interaction.reply({ 
-            content: `✅ Sweep interval updated to ${interval} hours!`, 
+            content: message, 
             flags: 64 
           });
         } else {
@@ -392,7 +437,7 @@ client.on('interactionCreate', async interaction => {
           const config = configResponse.data;
           if (config) {
             await interaction.reply({ 
-              content: `📋 Current configuration:\n• Sweep interval: ${config.sweep_interval_hours} hours\n• Privacy mode: ${config.privacy_mode_enabled ? 'enabled' : 'disabled'}\n• Monitored channels: ${config.channels_to_monitor?.length || 0}\n• Todo channel: ${config.todo_channel_id ? 'set' : 'not set'}`, 
+              content: `📋 Current sweep configuration:\n• Sweep: ${config.active ? '✅ Enabled' : '❌ Disabled'}\n• Interval: ${config.sweep_interval_hours || 'not set'} hours\n• Output channel: ${config.sweep_output_channel_id ? 'set' : 'not set'}\n• Privacy mode: ${config.privacy_mode_enabled ? 'enabled' : 'disabled'}\n• Monitored channels: ${config.channels_to_monitor?.length || 0}\n• Todo channel: ${config.todo_channel_id ? 'set' : 'not set'}`, 
               flags: 64 
             });
           } else {
@@ -505,9 +550,14 @@ async function performScheduledSweep() {
             const result = sweepResponse.data;
             console.log(`✅ Sweep completed for ${channel.name}: ${result.processed} messages processed, ${result.actionItemsFound} action items found`);
             
-            // If action items were found and we have a todo channel, post them
-            if (result.actionItemsFound > 0 && config.todo_channel_id) {
-              await postActionItemsToChannel(result.actionItems, config.todo_channel_id, channel.name);
+            // If action items were found and we have an output channel, post them
+            if (result.actionItemsFound > 0) {
+              const outputChannelId = config.sweep_output_channel_id || config.todo_channel_id;
+              if (outputChannelId) {
+                await postActionItemsToChannel(result.actionItems, outputChannelId, channel.name);
+              } else {
+                console.log(`⚠️ No output channel configured for sweep results`);
+              }
             }
             
           } catch (channelError) {
