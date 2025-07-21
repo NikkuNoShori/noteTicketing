@@ -258,7 +258,7 @@ client.on('interactionCreate', async interaction => {
       console.log('Webhook response data:', webhookResponse.data);
 
       await interaction.reply({ 
-        content: '✅ Sent to AI for summarization!', 
+        content: '✅ Processing your request... The summary will appear in this channel shortly!', 
         flags: 64 // 64 is the flag for ephemeral messages
       });
     } catch (error) {
