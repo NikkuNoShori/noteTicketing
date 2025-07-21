@@ -4,11 +4,35 @@ services:
     env: node
     plan: free
     buildCommand: 'npm install'
-    startCommand: 'npm start'
+    startCommand: 'npm run bot'
     envVars:
       - key: DISCORD_TOKEN
         sync: false # Set in Render dashboard
       - key: APPLICATION_ID
         sync: false # Set in Render dashboard
       - key: WEBHOOK_URL
-        sync: false # Set in Render dashboard 
+        sync: false # Set in Render dashboard
+      - key: DATABASE_URL
+        sync: false # Set in Render dashboard
+      - key: API_KEY
+        sync: false # Set in Render dashboard
+      - key: API_BASE_URL
+        sync: false # Set in Render dashboard
+
+  - type: web
+    name: note-ticketing-api
+    env: node
+    plan: free
+    buildCommand: 'npm install'
+    startCommand: 'npm run api'
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_PORT
+        value: 10000
+      - key: API_KEY
+        sync: false # Set in Render dashboard
+      - key: DATABASE_URL
+        sync: false # Set in Render dashboard
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-domain.com 

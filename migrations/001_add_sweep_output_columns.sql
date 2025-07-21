@@ -1,0 +1,2 @@
+ALTER TABLE bot_config ADD COLUMN IF NOT EXISTS sweep_output_channel_id VARCHAR(20);
+ALTER TABLE bot_config ADD COLUMN IF NOT EXISTS active BOOLEAN DEFAULT true; 
