@@ -119,7 +119,7 @@ Content-Type: application/json
 
 {
   "guildId": "GUILD_ID",
-  "channelId": "CHANNEL_ID", 
+  "channelId": "CHANNEL_ID",
   "messages": [...],
   "sweepType": "scheduled"
 }
@@ -278,4 +278,4 @@ For security or privacy concerns:
 - Configure appropriate sweep intervals
 - Monitor API rate limits
 - Use efficient database queries
-- Cache configuration data 
+- Cache configuration data

@@ -379,4 +379,4 @@ Commands are registered on bot startup:
 - Web dashboard for configuration
 - Bulk channel management
 - Advanced privacy controls
-- Integration with external task managers 
+- Integration with external task managers
